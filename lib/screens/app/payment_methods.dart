@@ -22,9 +22,9 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   late Web3Client ethClient;
   bool data = false;
 
-  final restaurantOwner = "0xbfEAfa9B322E74AFCfcC63104219D9B0416C07F5"; // the address of the owner of the restaurant (foodly).
+  final restaurantOwner = "0xC3923205Cd80c3B1856FF2B927e46896b36Df294"; // the address of the owner of the restaurant (foodly).
 
-  final clientAddress = "0xC3923205Cd80c3B1856FF2B927e46896b36Df294"; // the address which the items will be paid from.
+  final clientAddress = "0xbfEAfa9B322E74AFCfcC63104219D9B0416C07F5"; // the address which the items will be paid from.
   dynamic myCoins = 0;
   double totalPriceWithVatAndDelivery = 0;
 
@@ -66,7 +66,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
 
   Future<String> submit(String functionName, List<dynamic> args) async {
     EthPrivateKey credentials = EthPrivateKey.fromHex(
-        "394e748f82785846d10c6fb6efc3a4e65fb9c39c0916dc42f579bc26738525d4");
+        "c58e17d53714f56c3ded7e9eed18863301055b78e141dc4ccf2c9cd9c156a4b3");
     DeployedContract contract = await getDeployedContract();
     final ethFunction = contract.function(functionName);
     final result = await ethClient.sendTransaction(
