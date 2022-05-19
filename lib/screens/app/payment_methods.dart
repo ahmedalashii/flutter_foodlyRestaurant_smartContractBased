@@ -22,7 +22,9 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   late Web3Client ethClient;
   bool data = false;
 
-  final myAddress = "0x7511f0cD30bf098Ae67F56e7220a8dF27365d224";
+  final myAddress = "0x7511f0cD30bf098Ae67F56e7220a8dF27365d224"; // the address of the owner of the restaurant (foodly).
+
+  final clientAddress = "0xbfEAfa9B322E74AFCfcC63104219D9B0416C07F5"; // the address which the items will be paid from.
   dynamic myCoins = 0;
   double totalPriceWithVatAndDelivery = 0;
 
@@ -31,16 +33,16 @@ class _PaymentMethodsState extends State<PaymentMethods> {
     super.initState();
     httpClient = Client();
     ethClient = Web3Client(
-        "https://kovan.infura.io/v3/68fafe5fd373437a84c0a0e2aaa49387",
+        "https://ropsten.infura.io/v3/68fafe5fd373437a84c0a0e2aaa49387",
         httpClient);
-    getBalance(myAddress);
+    getBalance(clientAddress);
   }
 
   Future<DeployedContract> getDeployedContract() async {
     String abi = await rootBundle.loadString("assets/abi.json");
-    String contractAddress = "0xB514da80b73F09D70E5c07D09C5B9743edEE75ff";
+    String contractAddress = "0x924E375841d0C508181f628eeBA4e1aa1D34A8c5"; // the deployed contract
 
-    final contract = DeployedContract(ContractAbi.fromJson(abi, "PHCoin"),
+    final contract = DeployedContract(ContractAbi.fromJson(abi, "SampleToken"),
         EthereumAddress.fromHex(contractAddress));
     return contract;
   }
@@ -54,8 +56,8 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   }
 
   Future<void> getBalance(String targetAddress) async {
-    // EthereumAddress address = EthereumAddress.fromHex(targetAddress);
-    List<dynamic> result = await query("getBalance", []);
+    EthereumAddress address = EthereumAddress.fromHex(targetAddress);
+    List<dynamic> result = await query("balanceOf", [address]);
 
     myCoins = result[0];
     data = true;
@@ -75,28 +77,30 @@ class _PaymentMethodsState extends State<PaymentMethods> {
             parameters: args,
             maxGas: 100000),
         fetchChainIdFromNetworkId: false,
-        chainId: 42);
+        chainId: 3);
     return result;
   }
 
-  // Future<String> sendCoin({required double amount}) async {
-  //   var bigAmount = BigInt.from(amount);
-  //   var response = await submit("depositBalance", [bigAmount]);
-  //
-  //   print("Deposited");
-  //   txHash = response;
-  //   setState(() {});
-  //   return response;
-  // }
 
-
-  // this method is just when we want to withdraw coins from our wallet in the metamask ..
-  Future<String> withdrawCoin() async {
+  // this method is created to transfer coins between two different addresses (the owner of the restaurant which is the stakeholder here and the client which is the one who will eat the food : ) ).
+  Future<String> transferCoin() async {
+    EthereumAddress address = EthereumAddress.fromHex(myAddress);
     var bigAmount = BigInt.from(totalPriceWithVatAndDelivery);
-    var response = await submit("withdrawBalance", [bigAmount]);
+    var response = await submit("transfer", [address, bigAmount]);
 
+    debugPrint("Deposited in your wallet and withdrawn from the client wallet.");
+    // txHash = response;
+    setState(() {});
     return response;
   }
+
+  // this method is just when we want to withdraw coins from our wallet in the metamask ..
+  // Future<String> withdrawCoin() async {
+  //   var bigAmount = BigInt.from(totalPriceWithVatAndDelivery);
+  //   var response = await submit("withdrawBalance", [bigAmount]);
+  //
+  //   return response;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -346,7 +350,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
                     // else if it's less than or equal to what we have in our wallet .. then withdraw and clear the orders which they were waiting to be paid ..
                   } else if (totalPriceWithVatAndDelivery <=
                       myCoins.toDouble()) {
-                    await withdrawCoin();
+                    await transferCoin();
                     setState(() {
                       orders.orderedFoodItems.clear();
                     });
@@ -354,7 +358,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
                         context: context,
                         builder: (BuildContext context) => MyAlertDialog(
                             title:
-                                'You Placed the Order Successfully, \$${totalPriceWithVatAndDelivery.toStringAsFixed(2)} is withdrawn. and you still have ' +
+                                'You Placed the Order Successfully, \$${totalPriceWithVatAndDelivery.toStringAsFixed(2)} is withdrawn. and you still have \$' +
                                     (myCoins.toDouble() -
                                             totalPriceWithVatAndDelivery)
                                         .ceil()
