@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "../../constants/colors.dart" as colors;
 import "../../constants/lists.dart" as lists;
 import '../../widgets/restaurants_widget.dart';
+import 'add_to_order.dart';
 import 'featured_partners.dart';
 
 class HomePageScreen extends StatefulWidget {
@@ -254,7 +255,14 @@ class _HomePageScreenState extends State<HomePageScreen> {
           bool isItTheLastItem = index != list.length - 1;
           return GestureDetector(
             onTap: (){
-              debugPrint("Clicked");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddToOrder(
+                    foodItem: list[index],
+                  ),
+                ),
+              );
             },
             child: Container(
               margin: (isItTheLastItem)

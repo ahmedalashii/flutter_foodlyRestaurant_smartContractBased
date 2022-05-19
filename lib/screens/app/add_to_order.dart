@@ -93,7 +93,7 @@ class _AddToOrderState extends State<AddToOrder> {
                       filterQuality: FilterQuality.high,
                       fit: BoxFit.cover,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
                   ),
                 ),
                 Padding(
