@@ -94,7 +94,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
     return response;
   }
 
-  // this method is just when we want to withdraw coins from our wallet in the metamask ..
+  // this method is just when we want to withdraw coins from our wallet in the metamask ...
   // Future<String> withdrawCoin() async {
   //   var bigAmount = BigInt.from(totalPriceWithVatAndDelivery);
   //   var response = await submit("withdrawBalance", [bigAmount]);
