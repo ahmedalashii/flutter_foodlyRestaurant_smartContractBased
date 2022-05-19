@@ -40,7 +40,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
 
   Future<DeployedContract> getDeployedContract() async {
     String abi = await rootBundle.loadString("assets/abi.json");
-    String contractAddress = "0x02d643C66cF8e96271F81c1d4DCb7C59e6a631f6"; // the deployed contract
+    String contractAddress = "0x61C241b8A0615b652B5fB3f420A4bB2Ec8dbD0b6"; // the deployed contract
 
     final contract = DeployedContract(ContractAbi.fromJson(abi, "SampleToken"),
         EthereumAddress.fromHex(contractAddress));
