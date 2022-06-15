@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 
 import 'homepage.dart';
+import 'orders_screen.dart';
+
 import 'search_screen.dart';
 import "../../constants/colors.dart" as colors;
 
@@ -16,7 +18,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   final List _screens = [
     const HomePageScreen(),
     const SearchScreen(),
-    const Scaffold(),
+    const OrdersScreen(),
     const Scaffold(backgroundColor: Colors.blue),
   ];
 

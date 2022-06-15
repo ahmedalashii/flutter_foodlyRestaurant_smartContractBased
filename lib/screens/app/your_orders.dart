@@ -3,11 +3,14 @@ import 'package:foodly/screens/app/add_to_order.dart';
 import "../../constants/colors.dart" as colors;
 import '../../models/food_item.dart';
 import "../../constants/orders.dart" as orders;
+import '../../models/restaurant.dart';
 import '../../widgets/alert_dialog.dart';
 import 'payment_methods.dart';
 
 class YourOrders extends StatefulWidget {
-  const YourOrders({Key? key}) : super(key: key);
+  const YourOrders({Key? key, required this.restaurant}) : super(key: key);
+
+  final Restaurant restaurant;
 
   @override
   State<YourOrders> createState() => _YourOrdersState();
@@ -51,7 +54,7 @@ class _YourOrdersState extends State<YourOrders> {
         elevation: 0,
         backgroundColor: Colors.white,
       ),
-      body: (orders.orderedFoodItems.isNotEmpty)
+      body: (orders.restaurantOrderedFoodItems[widget.restaurant]!.isNotEmpty)
           ? buildYourOrders(context)
           : Center(
               child: Container(
@@ -59,7 +62,7 @@ class _YourOrdersState extends State<YourOrders> {
                 height: 350,
                 decoration: BoxDecoration(
                   image: const DecorationImage(
-                    image: AssetImage("assets/images/no-orders.png"),
+                    image: AssetImage("assets/images/no-unpaid-orders.png"),
                     filterQuality: FilterQuality.high,
                     fit: BoxFit.cover,
                   ),
@@ -71,17 +74,20 @@ class _YourOrdersState extends State<YourOrders> {
   }
 
   SingleChildScrollView buildYourOrders(BuildContext context) {
-    setState((){});
+    setState(() {});
     double subTotal = 0;
     double delivery = 0;
-    orders.orderedFoodItems.forEach((FoodItem item, int numberOfOrders) {
-      subTotal += (item.price * numberOfOrders);
-      delivery =
-          (delivery < item.shippingPrice) ? item.shippingPrice : delivery;
+    orders.restaurantOrderedFoodItems[widget.restaurant]!
+        .forEach((FoodItem item, int numberOfOrders) {
+      if (!item.isPaid) {
+        subTotal += (item.price * numberOfOrders);
+        delivery =
+            (delivery < item.shippingPrice) ? item.shippingPrice : delivery;
+      }
     });
     double totalWithVatAndDelivery =
         subTotal + (subTotal * (vatPercent / 100)) + delivery;
-    setState((){});
+    setState(() {});
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -231,8 +237,10 @@ class _YourOrdersState extends State<YourOrders> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          PaymentMethods(vatPercent: vatPercent),
+                      builder: (context) => PaymentMethods(
+                        vatPercent: vatPercent,
+                        restaurant: widget.restaurant,
+                      ),
                     ),
                   );
                 } else {
@@ -273,14 +281,23 @@ class _YourOrdersState extends State<YourOrders> {
   }
 
   ListView buildOrdersList() {
+    Map<FoodItem, int> unpaidOrders = {};
+    for (FoodItem foodItem
+        in orders.restaurantOrderedFoodItems[widget.restaurant]!.keys) {
+      if (!foodItem.isPaid && !unpaidOrders.containsKey(foodItem)) {
+        unpaidOrders[foodItem] =
+            orders.restaurantOrderedFoodItems[widget.restaurant]![foodItem]!;
+      }
+    }
+
     return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: orders.orderedFoodItems.keys.toList().length,
+        itemCount: unpaidOrders.length,
         itemBuilder: (BuildContext context, int index) {
           bool isItThelastItem =
-              (index == orders.orderedFoodItems.keys.toList().length - 1);
-          FoodItem foodItem = orders.orderedFoodItems.keys.toList()[index];
+              (index == unpaidOrders.keys.toList().length - 1);
+          FoodItem foodItem = unpaidOrders.keys.toList()[index];
           return InkWell(
             onTap: () {
               setState(() {
@@ -313,9 +330,7 @@ class _YourOrdersState extends State<YourOrders> {
                         height: 32,
                         child: Center(
                           child: Text(
-                            orders.orderedFoodItems.values
-                                .toList()[index]
-                                .toString(),
+                            unpaidOrders.values.toList()[index].toString(),
                             style: const TextStyle(
                                 color: colors.buttonColorGreen,
                                 fontSize: 18,
@@ -338,7 +353,7 @@ class _YourOrdersState extends State<YourOrders> {
                             Row(
                               children: [
                                 Text(
-                                  orders.orderedFoodItems.keys
+                                  unpaidOrders.keys
                                       .toList()[index]
                                       .name
                                       .toString(),
@@ -350,10 +365,8 @@ class _YourOrdersState extends State<YourOrders> {
                                 Expanded(child: Container()),
                                 Text(
                                   "\$" +
-                                      (orders.orderedFoodItems.keys
-                                                  .toList()[index]
-                                                  .price *
-                                              orders.orderedFoodItems.values
+                                      (unpaidOrders.keys.toList()[index].price *
+                                              unpaidOrders.values
                                                   .toList()[index])
                                           .toStringAsFixed(2),
                                   style: const TextStyle(
@@ -368,16 +381,24 @@ class _YourOrdersState extends State<YourOrders> {
                                 ? InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (orders.orderedFoodItems[foodItem]! >
+                                        if (orders.restaurantOrderedFoodItems[
+                                                widget.restaurant]![foodItem]! >
                                             1) {
-                                          orders.orderedFoodItems.update(
-                                              foodItem, (value) => value - 1);
+                                          orders.restaurantOrderedFoodItems[
+                                                  widget.restaurant]!
+                                              .update(foodItem,
+                                                  (value) => value - 1);
                                         } else if (orders
-                                                .orderedFoodItems[foodItem] ==
+                                                    .restaurantOrderedFoodItems[
+                                                widget.restaurant]![foodItem] ==
                                             1) {
-                                          orders.orderedFoodItems
+                                          orders.restaurantOrderedFoodItems[
+                                                  widget.restaurant]!
                                               .remove(foodItem);
-                                          if (orders.orderedFoodItems.isEmpty) {
+                                          if (orders
+                                              .restaurantOrderedFoodItems[
+                                                  widget.restaurant]!
+                                              .isEmpty) {
                                             Navigator.pop(context);
                                           }
                                         }
@@ -402,7 +423,10 @@ class _YourOrdersState extends State<YourOrders> {
                                     ),
                                   )
                                 : Text(
-                                    orders.orderedFoodItems.keys
+                                    orders
+                                        .restaurantOrderedFoodItems[
+                                            widget.restaurant]!
+                                        .keys
                                         .toList()[index]
                                         .description
                                         .capitalize(),

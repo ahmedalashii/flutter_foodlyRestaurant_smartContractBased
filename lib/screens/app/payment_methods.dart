@@ -7,24 +7,33 @@ import 'package:web3dart/web3dart.dart';
 import "../../constants/colors.dart" as colors;
 import "../../constants/orders.dart" as orders;
 import '../../models/food_item.dart';
+import '../../models/restaurant.dart';
 import '../../widgets/alert_dialog.dart';
 
 class PaymentMethods extends StatefulWidget {
-  const PaymentMethods({Key? key, required this.vatPercent}) : super(key: key);
+  const PaymentMethods(
+      {Key? key, required this.vatPercent, required this.restaurant})
+      : super(key: key);
   final double vatPercent;
+  final Restaurant restaurant;
 
   @override
   State<PaymentMethods> createState() => _PaymentMethodsState();
 }
 
 class _PaymentMethodsState extends State<PaymentMethods> {
+
   late Client httpClient;
-  late Web3Client ethClient;
+  late Web3Client ethClient; // requests via http
+
   bool data = false;
 
-  final restaurantOwner = "0xC3923205Cd80c3B1856FF2B927e46896b36Df294"; // the address of the owner of the restaurant (foodly).
+  final restaurantOwner =
+      "0xC3923205Cd80c3B1856FF2B927e46896b36Df294"; // the address of the owner of the restaurant (foodly).
 
-  final clientAddress = "0xbfEAfa9B322E74AFCfcC63104219D9B0416C07F5"; // the address which the items will be paid from.
+  final clientAddress =
+      "0xbfEAfa9B322E74AFCfcC63104219D9B0416C07F5"; // the address which the items will be paid from.
+
   dynamic myCoins = 0;
   double totalPriceWithVatAndDelivery = 0;
 
@@ -40,7 +49,8 @@ class _PaymentMethodsState extends State<PaymentMethods> {
 
   Future<DeployedContract> getDeployedContract() async {
     String abi = await rootBundle.loadString("assets/abi.json");
-    String contractAddress = "0x61C241b8A0615b652B5fB3f420A4bB2Ec8dbD0b6"; // the deployed contract
+    String contractAddress =
+        "0x61C241b8A0615b652B5fB3f420A4bB2Ec8dbD0b6"; // the deployed contract
 
     final contract = DeployedContract(ContractAbi.fromJson(abi, "SampleToken"),
         EthereumAddress.fromHex(contractAddress));
@@ -48,6 +58,7 @@ class _PaymentMethodsState extends State<PaymentMethods> {
   }
 
   Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
+    // used in getBalance method below
     final contract = await getDeployedContract();
     final ethFunction = contract.function(functionName);
     final result = await ethClient.call(
@@ -61,10 +72,10 @@ class _PaymentMethodsState extends State<PaymentMethods> {
 
     myCoins = result[0];
     data = true;
-    setState(() {});
   }
 
   Future<String> submit(String functionName, List<dynamic> args) async {
+    // used in transferCoins method below
     EthPrivateKey credentials = EthPrivateKey.fromHex(
         "c58e17d53714f56c3ded7e9eed18863301055b78e141dc4ccf2c9cd9c156a4b3");
     DeployedContract contract = await getDeployedContract();
@@ -81,14 +92,14 @@ class _PaymentMethodsState extends State<PaymentMethods> {
     return result;
   }
 
-
   // this method is created to transfer coins between two different addresses (the owner of the restaurant which is the stakeholder here and the client which is the one who will eat the food : ) ).
   Future<String> transferCoin() async {
     EthereumAddress address = EthereumAddress.fromHex(restaurantOwner);
-    var bigAmount = BigInt.from(totalPriceWithVatAndDelivery);
-    var response = await submit("transfer", [address, bigAmount]);
+    var numOfCoins = BigInt.from(totalPriceWithVatAndDelivery);
+    var response = await submit("transfer", [address, numOfCoins]);
 
-    debugPrint("Deposited in your wallet and withdrawn from the client wallet.");
+    debugPrint(
+        "Deposited in your wallet and withdrawn from the client wallet.");
     // txHash = response;
     setState(() {});
     return response;
@@ -320,13 +331,14 @@ class _PaymentMethodsState extends State<PaymentMethods> {
               onTap: () async {
                 double subTotal = 0;
                 double delivery = 0;
-                debugPrint("Number of distinct ordered Items to be paid: " + orders.orderedFoodItems.length.toString());
-                orders.orderedFoodItems
-                    .forEach((FoodItem item, int numberOfOrders) {
-                  subTotal += (item.price * numberOfOrders);
-                  delivery = (delivery < item.shippingPrice)
-                      ? item.shippingPrice
-                      : delivery;
+                orders.restaurantOrderedFoodItems[widget.restaurant]!
+                    .forEach((FoodItem foodItem, int numberOfOrders) {
+                  if (!foodItem.isPaid) {
+                    subTotal += (foodItem.price * numberOfOrders);
+                    delivery = (delivery < foodItem.shippingPrice)
+                        ? foodItem.shippingPrice
+                        : delivery;
+                  }
                 });
                 totalPriceWithVatAndDelivery = subTotal +
                     (subTotal * (widget.vatPercent / 100)) +
@@ -345,14 +357,18 @@ class _PaymentMethodsState extends State<PaymentMethods> {
                           circleColor: Colors.red),
                     );
                     setState(() {
-                      orders.orderedFoodItems.clear();
+                      orders.restaurantOrderedFoodItems[widget.restaurant]!
+                          .clear();
                     });
-                    // else if it's less than or equal to what we have in our wallet .. then withdraw and clear the orders which they were waiting to be paid ..
+                    // else if it's less than or equal to what we have in our wallet .. then withdraw and make the orders as paid which they were waiting to be paid ..
                   } else if (totalPriceWithVatAndDelivery <=
                       myCoins.toDouble()) {
                     await transferCoin();
                     setState(() {
-                      orders.orderedFoodItems.clear();
+                      orders.restaurantOrderedFoodItems[widget.restaurant]!
+                          .forEach((FoodItem foodItem, int numberOfOrders) {
+                        foodItem.isPaid = true;
+                      });
                     });
                     showDialog<String>(
                         context: context,
@@ -366,8 +382,12 @@ class _PaymentMethodsState extends State<PaymentMethods> {
                             subTitle:
                                 'You placed the orders successfully. you will get your food within 25 minutes. Thanks for using our services. Enjoy your food :)'));
                     debugPrint(totalPriceWithVatAndDelivery.ceil().toString());
-                    debugPrint("Number of distinct ordered Items to be paid: " + orders.orderedFoodItems.length.toString() + ", the old ones are already paid");
-                  // else if there's an insufficient amount of coins in our wallet then we can't pay the invoice ..
+                    debugPrint("Number of distinct ordered Items to be paid: " +
+                        orders.restaurantOrderedFoodItems[widget.restaurant]!
+                            .length
+                            .toString() +
+                        ", the old ones are already paid");
+                    // else if there's an insufficient amount of coins in our wallet then we can't pay the invoice ..
                   } else {
                     showDialog<String>(
                         context: context,

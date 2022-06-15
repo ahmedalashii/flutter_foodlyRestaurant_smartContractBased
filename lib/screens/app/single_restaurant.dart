@@ -99,7 +99,9 @@ class _SingleRestaurantState extends State<SingleRestaurant> {
                           filterQuality: FilterQuality.high,
                           fit: BoxFit.cover,
                         ),
-                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
+                        borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20)),
                       ),
                     );
                   },
@@ -451,6 +453,7 @@ class _SingleRestaurantState extends State<SingleRestaurant> {
                 MaterialPageRoute(
                   builder: (context) => AddToOrder(
                     foodItem: list[index],
+                    restaurant: widget.restaurant,
                   ),
                 ),
               );
@@ -569,6 +572,7 @@ class _SingleRestaurantState extends State<SingleRestaurant> {
               MaterialPageRoute(
                 builder: (context) => AddToOrder(
                   foodItem: list[index],
+                  restaurant: widget.restaurant,
                 ),
               ),
             );

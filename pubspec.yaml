@@ -38,6 +38,7 @@ dependencies:
   geolocator: ^8.2.1
   web3dart: ^2.3.5
   http: ^0.13.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

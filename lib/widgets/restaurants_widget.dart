@@ -4,8 +4,8 @@ import "../../constants/lists.dart" as lists;
 import '../screens/app/single_restaurant.dart';
 
 class Restaurants extends StatefulWidget {
-
   final bool reverse;
+
   const Restaurants({Key? key, this.reverse = false}) : super(key: key);
 
   @override
@@ -25,11 +25,17 @@ class _RestaurantsState extends State<Restaurants> {
         reverse: widget.reverse,
         physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, int itemIndex) {
-          bool isItTheLastItem =
-              itemIndex != lists.restaurants.length - 1;
+          bool isItTheLastItem = itemIndex != lists.restaurants.length - 1;
           return GestureDetector(
-            onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SingleRestaurant(restaurant: lists.restaurants[itemIndex],),),);
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SingleRestaurant(
+                    restaurant: lists.restaurants[itemIndex],
+                  ),
+                ),
+              );
             },
             child: Container(
               margin: (isItTheLastItem || widget.reverse)
@@ -45,23 +51,22 @@ class _RestaurantsState extends State<Restaurants> {
                       children: [
                         PageView.builder(
                           controller:
-                          lists.restaurants[itemIndex].pageController,
-                          itemCount: lists
-                              .restaurants[itemIndex].mealsImages.length,
+                              lists.restaurants[itemIndex].pageController,
+                          itemCount:
+                              lists.restaurants[itemIndex].mealsImages.length,
                           scrollDirection: Axis.horizontal,
                           physics: const ScrollPhysics(),
                           onPageChanged: (int index) {
                             setState(() {
-                              lists.restaurants[itemIndex]
-                                  .currentImageIndex = index;
+                              lists.restaurants[itemIndex].currentImageIndex =
+                                  index;
                             });
                           },
                           itemBuilder: (context, int index) {
                             return Container(
                               decoration: BoxDecoration(
                                 image: DecorationImage(
-                                  image: AssetImage(lists
-                                      .restaurants[itemIndex]
+                                  image: AssetImage(lists.restaurants[itemIndex]
                                       .mealsImages[index]),
                                   filterQuality: FilterQuality.high,
                                   fit: BoxFit.cover,
@@ -77,13 +82,12 @@ class _RestaurantsState extends State<Restaurants> {
                           child: SizedBox(
                             height: 15,
                             child: ListView.builder(
-                              itemCount: lists.restaurants[itemIndex]
-                                  .mealsImages.length,
+                              itemCount: lists
+                                  .restaurants[itemIndex].mealsImages.length,
                               scrollDirection: Axis.horizontal,
                               shrinkWrap: true,
                               physics: const ScrollPhysics(),
-                              itemBuilder:
-                                  (BuildContext context, int index) {
+                              itemBuilder: (BuildContext context, int index) {
                                 return Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: Container(
@@ -91,12 +95,11 @@ class _RestaurantsState extends State<Restaurants> {
                                     width: 12,
                                     decoration: BoxDecoration(
                                       color: (lists.restaurants[itemIndex]
-                                          .currentImageIndex ==
-                                          index)
+                                                  .currentImageIndex ==
+                                              index)
                                           ? Colors.white
                                           : Colors.black.withOpacity(0.2),
-                                      borderRadius:
-                                      BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
                                   ),
                                 );
@@ -130,7 +133,7 @@ class _RestaurantsState extends State<Restaurants> {
                       ),
                       const SizedBox(width: 5),
                       for (String foodKind
-                      in lists.restaurants[itemIndex].foodKinds) ...[
+                          in lists.restaurants[itemIndex].foodKinds) ...[
                         Container(
                           width: 4,
                           height: 4,
@@ -179,7 +182,7 @@ class _RestaurantsState extends State<Restaurants> {
                       const SizedBox(width: 3),
                       Text(
                         lists.restaurants[itemIndex].numberOfReviews
-                            .toString() +
+                                .toString() +
                             "+ Ratings",
                         style: TextStyle(
                           fontFamily: "Raleway",
@@ -208,7 +211,7 @@ class _RestaurantsState extends State<Restaurants> {
                       Text(
                         (lists.restaurants[itemIndex].shippingPrice > 0)
                             ? lists.restaurants[itemIndex].shippingPrice
-                            .toString()
+                                .toString()
                             : "Free",
                         style: TextStyle(
                           fontFamily: "Raleway",

@@ -4,13 +4,17 @@ import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import "../../constants/colors.dart" as colors;
 import '../../models/food_item.dart';
+import '../../models/restaurant.dart';
 import '../../widgets/choices_listView.dart';
 import "../../constants/orders.dart" as orders;
+import 'your_orders.dart';
 
 class AddToOrder extends StatefulWidget {
-  const AddToOrder({Key? key, required this.foodItem}) : super(key: key);
+  AddToOrder({Key? key, required this.foodItem, required this.restaurant})
+      : super(key: key);
 
-  final FoodItem foodItem;
+  late FoodItem foodItem;
+  final Restaurant restaurant;
 
   @override
   State<AddToOrder> createState() => _AddToOrderState();
@@ -93,7 +97,9 @@ class _AddToOrderState extends State<AddToOrder> {
                       filterQuality: FilterQuality.high,
                       fit: BoxFit.cover,
                     ),
-                    borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
+                    borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20)),
                   ),
                 ),
                 Padding(
@@ -373,13 +379,69 @@ class _AddToOrderState extends State<AddToOrder> {
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () {
-                    if (!orders.orderedFoodItems.containsKey(widget.foodItem)) {
-                      orders.orderedFoodItems[widget.foodItem] = numberOfOrders;
+                    // if the orders map doesn't contain the restaurant itself then add it ..
+                    if (!orders.restaurantOrderedFoodItems
+                        .containsKey(widget.restaurant)) {
+                      orders.restaurantOrderedFoodItems[widget.restaurant] = {
+                        widget.foodItem: numberOfOrders
+                      };
                     } else {
-                      orders.orderedFoodItems.update(
-                          widget.foodItem, (value) => value + numberOfOrders);
+                      // it contains the restaurant .. so check for FoodItem validity
+                      // if the restaurant doesn't contain the foodItem then add it ..
+                      if (!orders.restaurantOrderedFoodItems[widget.restaurant]!
+                          .containsKey(widget.foodItem)) {
+                        orders.restaurantOrderedFoodItems[widget.restaurant]![
+                            widget.foodItem] = numberOfOrders;
+                      } else {
+                        // if it contains the foodItem then check if it's the paid version (a past order) or just a new order ..
+                        bool isPaidFound = false;
+                        for (FoodItem item in orders
+                            .restaurantOrderedFoodItems[widget.restaurant]!
+                            .keys) {
+                          if (widget.foodItem.name == item.name) {
+                            if (!item.isPaid) {
+                              isPaidFound = false;
+                              setState(() {
+                                widget.foodItem = item;
+                              });
+                            } else {
+                              isPaidFound = true;
+                            }
+                          }
+                        }
+
+                        if (isPaidFound) {
+                          FoodItem foodItem = FoodItem(
+                              isPaid: false,
+                              additions: widget.foodItem.additions,
+                              description: widget.foodItem.description,
+                              foodKind: widget.foodItem.foodKind,
+                              price: widget.foodItem.price,
+                              preparationTime: widget.foodItem.preparationTime,
+                              shippingAddress: widget.foodItem.shippingAddress,
+                              shippingPrice: widget.foodItem.shippingPrice,
+                              review: widget.foodItem.review,
+                              name: widget.foodItem.name,
+                              imagePath: widget.foodItem.imagePath);
+                          orders.restaurantOrderedFoodItems[widget.restaurant]![
+                              foodItem] = numberOfOrders;
+                        } else {
+                          orders.restaurantOrderedFoodItems[widget.restaurant]!
+                              .update(
+                                  widget.foodItem,
+                                  (oldNumberOfOrders) =>
+                                      oldNumberOfOrders + numberOfOrders);
+                        }
+                      }
                     }
-                    Navigator.pushReplacementNamed(context, "/your_orders");
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            YourOrders(restaurant: widget.restaurant),
+                      ),
+                    );
                   },
                   child: Text(
                     "ADD TO ORDER (\$ " +

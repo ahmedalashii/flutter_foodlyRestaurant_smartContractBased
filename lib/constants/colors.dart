@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 const Color backgroundColor = Color(0xFFFFFFFF);
 
 const Color pageViewIndicatorColor = Color(0xFF22A45D);
+
 const Color buttonColorGreen = Color(0xFF22A45D);
 
 const Color titleColor = Color(0xFF010F07);

@@ -16,7 +16,8 @@ class _FeaturedPartnersState extends State<FeaturedPartners> {
         backgroundColor: colors.backgroundColor,
         appBar: AppBar(
           leading: IconButton(
-            onPressed: () => Navigator.pushReplacementNamed(context, "/bottom_nav_screen"),
+            onPressed: () =>
+                Navigator.pushReplacementNamed(context, "/bottom_nav_screen"),
             icon: const Icon(Icons.arrow_back_ios, size: 18),
           ),
           iconTheme: const IconThemeData(

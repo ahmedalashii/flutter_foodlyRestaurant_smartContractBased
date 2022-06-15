@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
         "/homepage_screen": (context) => const HomePageScreen(),
         "/search_screen": (context) => const SearchScreen(),
         "/featured_partners": (context) => const FeaturedPartners(),
-        "/your_orders": (context) => const YourOrders(),
+        // "/your_orders": (context) => const YourOrders(),
       },
     );
   }

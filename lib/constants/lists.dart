@@ -1,8 +1,6 @@
 import '../models/food_item.dart';
 import '../models/restaurant.dart';
 
-
-
 // List of items in our dropdown menu
 var cities = [
   'San Francisco',
@@ -11,7 +9,6 @@ var cities = [
   'Al-nasser',
   'Al-zaytoun',
 ];
-
 
 List<String> imagesList = [
   "assets/images/homepage-v1-header.png",
