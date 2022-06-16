@@ -145,7 +145,6 @@ class _ConnectWalletState extends State<ConnectWallet> {
     // Subscribe to events
     connector.on('connect', (session) async {
       Future.delayed(const Duration(seconds: 2), () async {
-        debugPrint("Account : ${account.toString()}");
         if (account != null) {
           debugPrint("Client Public Key: ${account.toString()}");
           EthereumWalletConnectProvider provider =
@@ -167,7 +166,8 @@ class _ConnectWalletState extends State<ConnectWallet> {
             if (totalPriceWithVatAndDelivery <= myCoins.toDouble()) {
               await scanQr().then((value) async {
                 Future.delayed(const Duration(milliseconds: 1200), () async {
-                  if (restaurantPublicKey.length == 42) {
+                  debugPrint("Restaurant Owner Public Key: $restaurantPublicKey");
+                  if (restaurantPublicKey.length == 42) { // to ensure that the data returned from the qr code is valid (is a valid public key) ..
                     // await credentials
                     //     .sendTransaction(
                     //   Transaction(
