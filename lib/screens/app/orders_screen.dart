@@ -69,8 +69,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ),
                 onPressed: () {
                   setState(() {
-                    orders.restaurantOrderedFoodItems.forEach((Restaurant restaurant, Map<FoodItem,int> map) {
-                      map.removeWhere((FoodItem item, int numberOfOrders) => !item.isPaid);
+                    orders.restaurantOrderedFoodItems.forEach(
+                        (Restaurant restaurant, Map<FoodItem, int> map) {
+                      map.removeWhere(
+                          (FoodItem item, int numberOfOrders) => !item.isPaid);
                     });
                   });
                 },
@@ -113,8 +115,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                   onPressed: () {
                     setState(() {
-                      orders.restaurantOrderedFoodItems.forEach((Restaurant restaurant, Map<FoodItem,int> map) {
-                        map.removeWhere((FoodItem item, int numberOfOrders) => item.isPaid);
+                      orders.restaurantOrderedFoodItems.forEach(
+                          (Restaurant restaurant, Map<FoodItem, int> map) {
+                        map.removeWhere(
+                            (FoodItem item, int numberOfOrders) => item.isPaid);
                       });
                     });
                   }),
