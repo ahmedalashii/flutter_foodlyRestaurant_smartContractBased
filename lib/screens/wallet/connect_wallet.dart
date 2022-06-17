@@ -1,7 +1,5 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'dart:typed_data';
-
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import '../../models/food_item.dart';
@@ -26,14 +24,14 @@ class ConnectWallet extends StatefulWidget {
   @override
   State<ConnectWallet> createState() => _ConnectWalletState();
 }
-class _ConnectWalletState extends State<ConnectWallet> {
 
+class _ConnectWalletState extends State<ConnectWallet> {
   DeployedContract? deployedContract;
   String? account;
   SessionStatus? session;
   late WalletConnectEthereumCredentials credentials;
   Web3Client? ethClient = Web3Client(
-      "https://ropsten.infura.io/v3/68fafe5fd373437a84c0a0e2aaa49387",
+      "https://ropsten.infura.io/v3/12ef93aae4f44b76b35986f5b79b8ed0",
       Client());
 
   String restaurantPublicKey = "";
@@ -120,7 +118,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
   Future<DeployedContract> getDeployedContract() async {
     String abi = await rootBundle.loadString("assets/contract.abi.json");
     String contractAddress =
-        "0x61C241b8A0615b652B5fB3f420A4bB2Ec8dbD0b6"; // the deployed contract
+        "0xE9192608985af540D4e01d00a430B5c1DcF704da"; // the deployed contract
 
     final contract = DeployedContract(ContractAbi.fromJson(abi, "SampleToken"),
         EthereumAddress.fromHex(contractAddress));
@@ -153,10 +151,12 @@ class _ConnectWalletState extends State<ConnectWallet> {
             debugPrint(myCoins.toString());
             orders.restaurantOrderedFoodItems[widget.restaurant]!
                 .forEach((FoodItem foodItem, int numberOfOrders) {
-              subTotal += (foodItem.price * numberOfOrders);
-              delivery = (delivery < foodItem.shippingPrice)
-                  ? foodItem.shippingPrice
-                  : delivery;
+              if (!foodItem.isPaid) {
+                subTotal += (foodItem.price * numberOfOrders);
+                delivery = (delivery < foodItem.shippingPrice)
+                    ? foodItem.shippingPrice
+                    : delivery;
+              }
             });
             totalPriceWithVatAndDelivery =
                 subTotal + (subTotal * (widget.vatPercent / 100)) + delivery;
@@ -227,9 +227,11 @@ class _ConnectWalletState extends State<ConnectWallet> {
       });
     });
     connector.on('session_update',
-        (payload) => debugPrint("AAAA session_update " + payload.toString()));
-    connector.on('disconnect',
-        (session) => debugPrint("Session : " + session.toString()));
+        (payload) => debugPrint("Session Updating : " + payload.toString()));
+    connector.on(
+        'disconnect',
+        (session) =>
+            debugPrint("Session Disconnection: " + session.toString()));
     // Create a new Session
     if (!connector.connected) {
       session = await connector.createSession(
@@ -266,44 +268,48 @@ class _ConnectWalletState extends State<ConnectWallet> {
 
   // submit a transaction
   Future<String> submit(String functionName, List<dynamic> args) async {
-    EthPrivateKey tempCredentials = EthPrivateKey.fromHex(
-        "c58e17d53714f56c3ded7e9eed18863301055b78e141dc4ccf2c9cd9c156a4b3");
+    // EthPrivateKey tempCredentials = EthPrivateKey.fromHex(
+    //     "64d7dfd774689f8a307770b3cd2df75325e4ab6acd90359fec38d5d5311266a6");
+
     WalletConnectEthereumCredentials credentials = this.credentials;
     final ethFunction = deployedContract!.function(functionName);
-    // final result = await credentials.sendTransaction(
-    //   Transaction.callContract(
-    //     from: EthereumAddress.fromHex(account!),
-    //     contract: deployedContract!,
-    //     function: ethFunction,
-    //     parameters: args,
-    //     maxGas: 1000000,
-    //     // value: EtherAmount.inWei(BigInt.from(5)),
-    //   ),
-    // );
-    // final result = await ethClient!.sendTransaction(
-    //   credentials,
-    //   Transaction.callContract(
-    //     from: EthereumAddress.fromHex(account!),
-    //     contract: deployedContract!,
-    //     function: ethFunction,
-    //     parameters: args,
-    //     maxGas: 100000,
-    //     // value: EtherAmount.inWei(BigInt.from(5)),
-    //   ),
-    //   fetchChainIdFromNetworkId: false,
-    //   chainId: 3,
-    // );
     final result = await ethClient!.sendTransaction(
-      tempCredentials,
+      credentials,
       Transaction.callContract(
+        from: EthereumAddress.fromHex(account!),
         contract: deployedContract!,
         function: ethFunction,
         parameters: args,
+        gasPrice: await ethClient!.getGasPrice(),
         maxGas: 100000,
       ),
       fetchChainIdFromNetworkId: false,
       chainId: 3,
     );
+
+    // This is if we want to transfer ether between two different wallets (two accounts) ..
+
+    // final result = await credentials.sendTransaction(
+    //   Transaction(
+    //     from: EthereumAddress.fromHex(account!),
+    //     to: EthereumAddress.fromHex(restaurantPublicKey),
+    //     value: EtherAmount.fromUnitAndValue(EtherUnit.finney, 1),
+    //   ),
+    // );
+
+    // if we need private key to be imported manually ..
+
+    // final result = await ethClient!.sendTransaction(
+    //   tempCredentials,
+    //   Transaction.callContract(
+    //     contract: deployedContract!,
+    //     function: ethFunction,
+    //     parameters: args,
+    //   ),
+    //   fetchChainIdFromNetworkId: false,
+    //   chainId: 3,
+    // );
+
     return result;
   }
 
@@ -315,7 +321,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
     var response = await submit("transfer", [address, numOfCoins]);
 
     debugPrint(
-        "Deposited in your wallet and withdrawn from the client wallet.");
+        "Deposited in restaurant owner wallet and withdrawn from the client wallet.");
     // txHash = response;
     setState(() {});
     return response;
