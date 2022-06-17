@@ -1,7 +1,9 @@
-
 import "package:flutter/material.dart";
 import "../../constants/colors.dart" as colors;
+import "../../constants/orders.dart" as orders;
+import '../../models/food_item.dart';
 import '../../models/restaurant.dart';
+import '../../widgets/alert_dialog.dart';
 import '../wallet/connect_wallet.dart';
 
 class PaymentMethods extends StatefulWidget {
@@ -16,7 +18,6 @@ class PaymentMethods extends StatefulWidget {
 }
 
 class _PaymentMethodsState extends State<PaymentMethods> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -232,14 +233,42 @@ class _PaymentMethodsState extends State<PaymentMethods> {
             ),
             const SizedBox(height: 20),
             InkWell(
-              onTap:(){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ConnectWallet(restaurant: widget.restaurant, vatPercent: widget.vatPercent),
-                  ),
-                );
+              onTap: () {
+                double subTotal = 0,
+                    delivery = 0,
+                    totalPriceWithVatAndDelivery = 0;
+                orders.restaurantOrderedFoodItems[widget.restaurant]!
+                    .forEach((FoodItem foodItem, int numberOfOrders) {
+                  if (!foodItem.isPaid) {
+                    subTotal += (foodItem.price * numberOfOrders);
+                    delivery = (delivery < foodItem.shippingPrice)
+                        ? foodItem.shippingPrice
+                        : delivery;
+                  }
+                });
+                totalPriceWithVatAndDelivery = subTotal +
+                    (subTotal * (widget.vatPercent / 100)) +
+                    delivery;
+                if (totalPriceWithVatAndDelivery > 0) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ConnectWallet(
+                          restaurant: widget.restaurant,
+                          vatPercent: widget.vatPercent),
+                    ),
+                  );
+                } else {
+                  showDialog<String>(
+                    context: context,
+                    builder: (BuildContext context) => const MyAlertDialog(
+                        title: "You don't have any order yet to pay for!",
+                        subTitle:
+                            'Keep browsing and add orders to the card to pay for them when available.',
+                        circleIcon: Icons.clear_rounded,
+                        circleColor: Colors.red),
+                  );
+                }
               },
               child: Padding(
                 padding: EdgeInsets.symmetric(

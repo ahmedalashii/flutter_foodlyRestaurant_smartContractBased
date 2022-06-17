@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:typed_data';
+
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import '../../models/food_item.dart';
@@ -24,9 +26,7 @@ class ConnectWallet extends StatefulWidget {
   @override
   State<ConnectWallet> createState() => _ConnectWalletState();
 }
-
 class _ConnectWalletState extends State<ConnectWallet> {
-  // String rpcUrl =
 
   DeployedContract? deployedContract;
   String? account;
@@ -41,9 +41,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
 
   dynamic myCoins = 0;
 
-  double subTotal = 0;
-  double delivery = 0;
-  double totalPriceWithVatAndDelivery = 0;
+  double subTotal = 0, delivery = 0, totalPriceWithVatAndDelivery = 0;
 
   @override
   void initState() {
@@ -166,36 +164,35 @@ class _ConnectWalletState extends State<ConnectWallet> {
             if (totalPriceWithVatAndDelivery <= myCoins.toDouble()) {
               await scanQr().then((value) async {
                 Future.delayed(const Duration(milliseconds: 1200), () async {
-                  debugPrint("Restaurant Owner Public Key: $restaurantPublicKey");
-                  if (restaurantPublicKey.length == 42) { // to ensure that the data returned from the qr code is valid (is a valid public key) ..
-                    // await credentials
-                    //     .sendTransaction(
-                    //   Transaction(
-                    //     to: EthereumAddress.fromHex(restaurantPublicKey),
-                    //     from: EthereumAddress.fromHex(account!),
-                    //     value:
-                    //         EtherAmount.fromUnitAndValue(EtherUnit.finney, 0),
-                    //   ),
-                    // )
-                    //     .then((String value) async {
-                    //   debugPrint("Hash : " + value);
-                    // });
-                    await transferCoin();
-                    showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => MyAlertDialog(
-                            title:
-                                'You Placed the Order Successfully, \$${totalPriceWithVatAndDelivery.toStringAsFixed(2)} is withdrawn. and you still have \$' +
-                                    (myCoins.toDouble() -
-                                            totalPriceWithVatAndDelivery)
-                                        .ceil()
-                                        .toString(),
-                            subTitle:
-                                'You placed the orders successfully. you will get your food within 25 minutes. Thanks for using our services. Enjoy your food :)'));
-                    setState(() {
-                      orders.restaurantOrderedFoodItems[widget.restaurant]!
-                          .forEach((FoodItem foodItem, int numberOfOrders) {
-                        foodItem.isPaid = true;
+                  debugPrint(
+                      "Restaurant Owner Public Key: $restaurantPublicKey");
+                  if (restaurantPublicKey.length == 42) {
+                    // to ensure that the data returned from the qr code is valid (is a valid public key) ..
+                    await transferCoin().then((String value) {
+                      Future.delayed(const Duration(seconds: 2), () {
+                        debugPrint("Hash : $value");
+                        showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) => MyAlertDialog(
+                              title:
+                                  'You Placed the Order Successfully, \$${totalPriceWithVatAndDelivery.toStringAsFixed(2)} is withdrawn. and you still have \$' +
+                                      (myCoins.toDouble() -
+                                              totalPriceWithVatAndDelivery)
+                                          .ceil()
+                                          .toString(),
+                              subTitle:
+                                  'You placed the orders successfully. you will get your food within 25 minutes. Thanks for using our services. Enjoy your food :)'),
+                        ).then((value) {
+                          setState(() {
+                            orders
+                                .restaurantOrderedFoodItems[widget.restaurant]!
+                                .forEach(
+                                    (FoodItem foodItem, int numberOfOrders) {
+                              foodItem.isPaid = true;
+                            });
+                          });
+                          Navigator.pop(context);
+                        });
                       });
                     });
                   } else {
@@ -269,15 +266,36 @@ class _ConnectWalletState extends State<ConnectWallet> {
 
   // submit a transaction
   Future<String> submit(String functionName, List<dynamic> args) async {
-    // used in transferCoins method below
     EthPrivateKey tempCredentials = EthPrivateKey.fromHex(
         "c58e17d53714f56c3ded7e9eed18863301055b78e141dc4ccf2c9cd9c156a4b3");
-    // WalletConnectEthereumCredentials credentials = this.credentials;
+    WalletConnectEthereumCredentials credentials = this.credentials;
     final ethFunction = deployedContract!.function(functionName);
+    // final result = await credentials.sendTransaction(
+    //   Transaction.callContract(
+    //     from: EthereumAddress.fromHex(account!),
+    //     contract: deployedContract!,
+    //     function: ethFunction,
+    //     parameters: args,
+    //     maxGas: 1000000,
+    //     // value: EtherAmount.inWei(BigInt.from(5)),
+    //   ),
+    // );
+    // final result = await ethClient!.sendTransaction(
+    //   credentials,
+    //   Transaction.callContract(
+    //     from: EthereumAddress.fromHex(account!),
+    //     contract: deployedContract!,
+    //     function: ethFunction,
+    //     parameters: args,
+    //     maxGas: 100000,
+    //     // value: EtherAmount.inWei(BigInt.from(5)),
+    //   ),
+    //   fetchChainIdFromNetworkId: false,
+    //   chainId: 3,
+    // );
     final result = await ethClient!.sendTransaction(
       tempCredentials,
       Transaction.callContract(
-        // from: EthereumAddress.fromHex(account!),
         contract: deployedContract!,
         function: ethFunction,
         parameters: args,

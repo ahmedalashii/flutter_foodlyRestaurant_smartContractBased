@@ -58,7 +58,7 @@ class _MyAlertDialogState extends State<MyAlertDialog> {
                 onPressed: () {
                   Navigator.pop(context);
                   setState(() {
-                    // orders.restaurantOrderedFoodItems.clear();
+                    
                   });
                 },
                 child: const Text(
