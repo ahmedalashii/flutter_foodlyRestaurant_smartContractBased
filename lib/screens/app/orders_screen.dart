@@ -106,22 +106,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       color: Colors.grey.shade500)),
               Expanded(child: Container()),
               TextButton(
-                  child: Text(
-                    "Clear all".toUpperCase(),
-                    style: const TextStyle(
-                        fontFamily: "Raleway",
-                        fontSize: 16,
-                        color: Colors.black87),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      orders.restaurantOrderedFoodItems.forEach(
-                          (Restaurant restaurant, Map<FoodItem, int> map) {
-                        map.removeWhere(
-                            (FoodItem item, int numberOfOrders) => item.isPaid);
-                      });
+                child: Text(
+                  "Clear all".toUpperCase(),
+                  style: const TextStyle(
+                      fontFamily: "Raleway",
+                      fontSize: 16,
+                      color: Colors.black87),
+                ),
+                onPressed: () {
+                  setState(() {
+                    orders.restaurantOrderedFoodItems.forEach(
+                        (Restaurant restaurant, Map<FoodItem, int> map) {
+                      map.removeWhere(
+                          (FoodItem item, int numberOfOrders) => item.isPaid);
                     });
-                  }),
+                  });
+                },
+              ),
             ],
           ),
           const SizedBox(height: 10),
