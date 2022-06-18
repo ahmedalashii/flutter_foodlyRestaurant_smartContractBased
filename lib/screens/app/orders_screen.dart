@@ -3,6 +3,7 @@ import "../../constants/colors.dart" as colors;
 import "../../constants/orders.dart" as orders;
 import '../../models/food_item.dart';
 import '../../models/restaurant.dart';
+import 'add_to_order.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({Key? key}) : super(key: key);
@@ -194,14 +195,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
               itemBuilder: (BuildContext context, int index) {
                 return GestureDetector(
                   onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => AddToOrder(
-                    //       foodItem: list[index],
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddToOrder(
+                          foodItem: itemsList[restaurant]![index],
+                          restaurant: restaurant,
+                        ),
+                      ),
+                    );
                   },
                   child: Column(
                     children: [
