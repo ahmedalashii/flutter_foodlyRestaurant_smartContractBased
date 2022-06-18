@@ -15,7 +15,6 @@ class AddToOrder extends StatefulWidget {
 
   late FoodItem foodItem;
   final Restaurant restaurant;
-
   @override
   State<AddToOrder> createState() => _AddToOrderState();
 }
@@ -31,7 +30,6 @@ class _AddToOrderState extends State<AddToOrder> {
   int? _selected2ndGroupValue = 0;
 
   int numberOfOrders = 1;
-
   late double totalOrdersPrice;
 
   Color _statusBarColor = Colors.transparent;
@@ -311,155 +309,164 @@ class _AddToOrderState extends State<AddToOrder> {
                   ],
                 ),
                 const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          if (numberOfOrders > 1) {
-                            numberOfOrders--;
-                            totalOrdersPrice -= widget.foodItem.price;
-                          }
-                        });
-                      },
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        child: Center(
-                          child: Text(
-                            "-",
-                            style: TextStyle(
-                              color: Colors.grey.shade800,
-                              fontSize: 35,
+                // we used here StatefulBuilder to set a specific setState to a specific widget (not the whole screen) ..
+                StatefulBuilder(
+                  builder: (BuildContext context,StateSetter state) {
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                state(() {
+                                  if (numberOfOrders > 1) {
+                                    numberOfOrders--;
+                                    totalOrdersPrice -= widget.foodItem.price;
+                                  }
+                                });
+                              },
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                child: Center(
+                                  child: Text(
+                                    "-",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 35,
+                                    ),
+                                  ),
+                                ),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey.shade300,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      numberOfOrders.toString(),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontFamily: "Raleway",
-                        color: Colors.black87.withOpacity(0.8),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          numberOfOrders++;
-                          totalOrdersPrice += widget.foodItem.price;
-                        });
-                      },
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        child: Center(
-                          child: Text(
-                            "+",
-                            style: TextStyle(
-                              color: Colors.grey.shade800,
-                              fontSize: 35,
+                            Text(
+                              numberOfOrders.toString(),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: "Raleway",
+                                color: Colors.black87.withOpacity(0.8),
+                              ),
                             ),
-                          ),
+                            InkWell(
+                              onTap: () {
+                                state(() {
+                                  numberOfOrders++;
+                                  totalOrdersPrice += widget.foodItem.price;
+                                });
+                              },
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                child: Center(
+                                  child: Text(
+                                    "+",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 35,
+                                    ),
+                                  ),
+                                ),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey.shade300,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: () {
-                    // if the orders map doesn't contain the restaurant itself then add it ..
-                    if (!orders.restaurantOrderedFoodItems
-                        .containsKey(widget.restaurant)) {
-                      orders.restaurantOrderedFoodItems[widget.restaurant] = {
-                        widget.foodItem: numberOfOrders
-                      };
-                    } else {
-                      // it contains the restaurant .. so check for FoodItem validity
-                      // if the restaurant doesn't contain the foodItem then add it ..
-                      if (!orders.restaurantOrderedFoodItems[widget.restaurant]!
-                          .containsKey(widget.foodItem)) {
-                        orders.restaurantOrderedFoodItems[widget.restaurant]![
-                            widget.foodItem] = numberOfOrders;
-                      } else {
-                        // if it contains the foodItem then check if it's the paid version (a past order) or just a new order ..
-                        bool isPaidFound = false;
-                        for (FoodItem item in orders
-                            .restaurantOrderedFoodItems[widget.restaurant]!
-                            .keys) {
-                          if (widget.foodItem.name == item.name) {
-                            if (!item.isPaid) {
-                              isPaidFound = false;
-                              setState(() {
-                                widget.foodItem = item;
-                              });
+                        const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: () {
+                            // if the orders map doesn't contain the restaurant itself then add it ..
+                            if (!orders.restaurantOrderedFoodItems
+                                .containsKey(widget.restaurant)) {
+                              orders.restaurantOrderedFoodItems[widget.restaurant] = {
+                                widget.foodItem: numberOfOrders
+                              };
                             } else {
-                              isPaidFound = true;
-                            }
-                          }
-                        }
+                              // it contains the restaurant .. so check for FoodItem validity
+                              // if the restaurant doesn't contain the foodItem then add it ..
+                              if (!orders.restaurantOrderedFoodItems[widget.restaurant]!
+                                  .containsKey(widget.foodItem)) {
+                                orders.restaurantOrderedFoodItems[widget.restaurant]![
+                                widget.foodItem] = numberOfOrders;
+                              } else {
+                                // if it contains the foodItem then check if it's the paid version (a past order) or just a new order ..
+                                bool isPaidFound = false;
+                                for (FoodItem item in orders
+                                    .restaurantOrderedFoodItems[widget.restaurant]!
+                                    .keys) {
+                                  if (widget.foodItem.name == item.name) {
+                                    if (!item.isPaid) {
+                                      isPaidFound = false;
+                                      setState(() {
+                                        widget.foodItem = item;
+                                      });
+                                    } else {
+                                      isPaidFound = true;
+                                    }
+                                  }
+                                }
 
-                        if (isPaidFound) {
-                          FoodItem foodItem = FoodItem(
-                              isPaid: false,
-                              additions: widget.foodItem.additions,
-                              description: widget.foodItem.description,
-                              foodKind: widget.foodItem.foodKind,
-                              price: widget.foodItem.price,
-                              preparationTime: widget.foodItem.preparationTime,
-                              shippingAddress: widget.foodItem.shippingAddress,
-                              shippingPrice: widget.foodItem.shippingPrice,
-                              review: widget.foodItem.review,
-                              name: widget.foodItem.name,
-                              imagePath: widget.foodItem.imagePath);
-                          orders.restaurantOrderedFoodItems[widget.restaurant]![
-                              foodItem] = numberOfOrders;
-                        } else {
-                          orders.restaurantOrderedFoodItems[widget.restaurant]!
-                              .update(
-                                  widget.foodItem,
-                                  (oldNumberOfOrders) =>
+                                if (isPaidFound) {
+                                  FoodItem foodItem = FoodItem(
+                                      isPaid: false,
+                                      additions: widget.foodItem.additions,
+                                      description: widget.foodItem.description,
+                                      foodKind: widget.foodItem.foodKind,
+                                      price: widget.foodItem.price,
+                                      preparationTime: widget.foodItem.preparationTime,
+                                      shippingAddress: widget.foodItem.shippingAddress,
+                                      shippingPrice: widget.foodItem.shippingPrice,
+                                      review: widget.foodItem.review,
+                                      name: widget.foodItem.name,
+                                      imagePath: widget.foodItem.imagePath);
+                                  orders.restaurantOrderedFoodItems[widget.restaurant]![
+                                  foodItem] = numberOfOrders;
+                                } else {
+                                  orders.restaurantOrderedFoodItems[widget.restaurant]!
+                                      .update(
+                                      widget.foodItem,
+                                          (oldNumberOfOrders) =>
                                       oldNumberOfOrders + numberOfOrders);
-                        }
-                      }
-                    }
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            YourOrders(restaurant: widget.restaurant),
-                      ),
+                                }
+                              }
+                            }
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    YourOrders(restaurant: widget.restaurant),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "ADD TO ORDER (\$ " +
+                                (totalOrdersPrice.toStringAsFixed(2)) +
+                                ")",
+                            style: TextStyle(
+                              fontFamily: "Raleway",
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            primary: colors.buttonColorGreen,
+                            minimumSize: Size(double.infinity, 55),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
-                  },
-                  child: Text(
-                    "ADD TO ORDER (\$ " +
-                        (totalOrdersPrice.toStringAsFixed(2)) +
-                        ")",
-                    style: TextStyle(
-                      fontFamily: "Raleway",
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    primary: colors.buttonColorGreen,
-                    minimumSize: Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                  }
                 ),
                 const SizedBox(height: 20),
               ],

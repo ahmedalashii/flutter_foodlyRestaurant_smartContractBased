@@ -32,7 +32,7 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
 
     return hash;
   }
-
+  
   @override
   Future<MsgSignature> signToSignature(Uint8List payload,
       {int? chainId, bool isEIP1559 = false}) {

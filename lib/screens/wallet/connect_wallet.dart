@@ -37,7 +37,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
   String restaurantPublicKey = "";
   bool data = false;
 
-  dynamic myCoins = 0;
+  dynamic clientCoins = 0;
 
   double subTotal = 0, delivery = 0, totalPriceWithVatAndDelivery = 0;
 
@@ -148,7 +148,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
           credentials = WalletConnectEthereumCredentials(provider: provider);
           debugPrint("credentials : ${credentials.provider}");
           await getBalance(account!).then((value) async {
-            debugPrint(myCoins.toString());
+            debugPrint(clientCoins.toString());
             orders.restaurantOrderedFoodItems[widget.restaurant]!
                 .forEach((FoodItem foodItem, int numberOfOrders) {
               if (!foodItem.isPaid) {
@@ -161,7 +161,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
             totalPriceWithVatAndDelivery =
                 subTotal + (subTotal * (widget.vatPercent / 100)) + delivery;
             debugPrint(totalPriceWithVatAndDelivery.toString());
-            if (totalPriceWithVatAndDelivery <= myCoins.toDouble()) {
+            if (totalPriceWithVatAndDelivery <= clientCoins.toDouble()) {
               await scanQr().then((value) async {
                 Future.delayed(const Duration(milliseconds: 1200), () async {
                   debugPrint(
@@ -176,7 +176,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
                           builder: (BuildContext context) => MyAlertDialog(
                               title:
                                   'You Placed the Order Successfully, \$${totalPriceWithVatAndDelivery.toStringAsFixed(2)} is withdrawn. and you still have \$' +
-                                      (myCoins.toDouble() -
+                                      (clientCoins.toDouble() -
                                               totalPriceWithVatAndDelivery)
                                           .ceil()
                                           .toString(),
@@ -218,7 +218,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
                   subTitle: "The Price of the invoice is : " +
                       totalPriceWithVatAndDelivery.ceil().toString() +
                       "\nwhereas the coins you have is : " +
-                      myCoins.toDouble().toString(),
+                      clientCoins.toDouble().toString(),
                 ),
               );
             }
@@ -262,7 +262,7 @@ class _ConnectWalletState extends State<ConnectWallet> {
     EthereumAddress address = EthereumAddress.fromHex(targetAddress);
     List<dynamic> result = await query("balanceOf", [address]);
 
-    myCoins = result[0];
+    clientCoins = result[0];
     data = true;
   }
 
