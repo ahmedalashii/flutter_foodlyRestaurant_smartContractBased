@@ -5,7 +5,6 @@ import 'package:foodly/screens/app/featured_partners.dart';
 import 'screens/app/bottom_nav_screen.dart';
 import 'screens/app/homepage.dart';
 import 'screens/app/search_screen.dart';
-import 'screens/app/your_orders.dart';
 import 'screens/authentication/adding_phone_number.dart';
 import 'screens/authentication/forget_password.dart';
 import 'screens/authentication/login_screen.dart';

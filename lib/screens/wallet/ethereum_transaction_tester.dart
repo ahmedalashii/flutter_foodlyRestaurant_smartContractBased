@@ -32,10 +32,21 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
 
     return hash;
   }
-  
+
   @override
   Future<MsgSignature> signToSignature(Uint8List payload,
       {int? chainId, bool isEIP1559 = false}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  // TODO: implement address
+  EthereumAddress get address => throw UnimplementedError();
+
+  @override
+  MsgSignature signToEcSignature(Uint8List payload,
+      {int? chainId, bool isEIP1559 = false}) {
+    // TODO: implement signToEcSignature
     throw UnimplementedError();
   }
 }
@@ -51,7 +62,9 @@ class EthereumTransactionTester extends TransactionTester {
   }) : super(connector: connector);
 
   factory EthereumTransactionTester() {
-    final ethereum = Web3Client("https://ropsten.infura.io/v3/68fafe5fd373437a84c0a0e2aaa49387", Client());
+    final ethereum = Web3Client(
+        "https://ropsten.infura.io/v3/68fafe5fd373437a84c0a0e2aaa49387",
+        Client());
 
     final connector = WalletConnect(
       bridge: 'https://bridge.walletconnect.org',
@@ -93,7 +106,7 @@ class EthereumTransactionTester extends TransactionTester {
       from: sender,
       gasPrice: EtherAmount.inWei(BigInt.one),
       maxGas: 100000,
-      value: EtherAmount.fromUnitAndValue(EtherUnit.finney, 1),
+      value: EtherAmount.fromBigInt(EtherUnit.finney, BigInt.from(1)),
     );
 
     final credentials = WalletConnectEthereumCredentials(provider: provider);

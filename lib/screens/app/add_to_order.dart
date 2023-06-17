@@ -457,7 +457,7 @@ class _AddToOrderState extends State<AddToOrder> {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            primary: colors.buttonColorGreen,
+                            backgroundColor: colors.buttonColorGreen,
                             minimumSize: Size(double.infinity, 55),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
